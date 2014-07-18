@@ -131,7 +131,7 @@
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
 
-    attributionButton = [[UIBarButtonItem alloc] initWithTitle:@"Info" style:UIBarButtonItemStyleDone target:self action:@selector(displayAttribution)];
+  attributionButton = [[UIBarButtonItem alloc] initWithTitle:@"Info" style:UIBarButtonItemStyleDone target:self action:@selector(displayAttribution:)];
     shareButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemAction target:self action:@selector(share:)];
     shareButton.enabled = NO;
     if (self.presentingViewController && (self.modalPresentationStyle == UIModalPresentationFullScreen)) {
@@ -157,9 +157,9 @@
     [self moveToImageAtIndex:pageIndex animated:NO];
 }
 
-- (void)displayAttribution {
-  if ([self.delegate respondsToSelector:@selector(imageViewerViewController:didTapOnAttributionButton:)]) {
-    [self.delegate imageViewerViewController:self didTapOnAttributionButton:self.currentImageIndex];
+- (void)displayAttribution:(UIBarButtonItem *)barButtonItem {
+  if ([self.delegate respondsToSelector:@selector(imageViewerViewController:didTapOnAttributionButton:barbuttonItem:)]) {
+    [self.delegate imageViewerViewController:self didTapOnAttributionButton:self.currentImageIndex barbuttonItem:barButtonItem];
   }
 }
 
@@ -225,8 +225,8 @@
 }
 
 - (void)share:(id)sender {
-  if ([self.delegate respondsToSelector:@selector(imageViewerViewController:shareImageAtIndex:)]) {
-    [self.delegate imageViewerViewController:self shareImageAtIndex:self.currentImageIndex];
+  if ([self.delegate respondsToSelector:@selector(imageViewerViewController:shareImageAtIndex:barbuttonItem:)]) {
+    [self.delegate imageViewerViewController:self shareImageAtIndex:self.currentImageIndex barbuttonItem:sender];
   }
 }
 
@@ -335,6 +335,7 @@
 
     if (_titleView) {
         [_titleView updateMetadata:_imageSource[pageIndex].title index:pageIndex total:_imageSource.numberOfImages];
+        [_titleView layoutSubviews];
         _titleView.frame = CGRectMake(0,
                                       CGRectGetHeight(self.view.frame) - CGRectGetHeight(self.titleView.frame),
                                       CGRectGetWidth(self.view.frame),
