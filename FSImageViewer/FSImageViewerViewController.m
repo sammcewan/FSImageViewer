@@ -326,6 +326,10 @@
 
     if (_titleView) {
         [_titleView updateMetadata:_imageSource[pageIndex].title index:pageIndex total:_imageSource.numberOfImages];
+        _titleView.frame = CGRectMake(0,
+                                      CGRectGetHeight(self.view.frame) - CGRectGetHeight(self.titleView.frame),
+                                      CGRectGetWidth(self.view.frame),
+                                      CGRectGetHeight(self.titleView.frame));
     }
 
 }
