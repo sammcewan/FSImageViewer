@@ -36,6 +36,7 @@
     BOOL barsHidden;
     BOOL statusBarHidden;
     UIBarButtonItem *shareButton;
+    UIBarButtonItem *attributionButton;
 }
 
 - (id)initWithImageSource:(id <FSImageSource>)aImageSource {
@@ -130,23 +131,36 @@
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
 
+    attributionButton = [[UIBarButtonItem alloc] initWithTitle:@"Info" style:UIBarButtonItemStyleDone target:self action:@selector(displayAttribution)];
     shareButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemAction target:self action:@selector(share:)];
     shareButton.enabled = NO;
     if (self.presentingViewController && (self.modalPresentationStyle == UIModalPresentationFullScreen)) {
         UIBarButtonItem *doneButton = [[UIBarButtonItem alloc] initWithTitle:[self localizedStringForKey:@"done" withDefault:@"Done"] style:UIBarButtonItemStyleDone target:self action:@selector(done:)];
         self.navigationItem.rightBarButtonItem = doneButton;
-        if (!_sharingDisabled) {
-            self.navigationItem.leftBarButtonItem = shareButton;
+        if (_sharingDisabled) {
+            shareButton = nil;
         }
     }
     else {
-        if (!_sharingDisabled) {
-            self.navigationItem.rightBarButtonItem = shareButton;
+        if (_sharingDisabled) {
+            shareButton = nil;
         }
+    }
+
+    if (shareButton) {
+        [self.navigationItem setRightBarButtonItems:@[attributionButton, shareButton]];
+    } else {
+        [self.navigationItem setRightBarButtonItem:attributionButton];
     }
 
     [self setupScrollViewContentSize];
     [self moveToImageAtIndex:pageIndex animated:NO];
+}
+
+- (void)displayAttribution {
+  if ([self.delegate respondsToSelector:@selector(imageViewerViewController:didTapOnAttributionButton:)]) {
+    [self.delegate imageViewerViewController:self didTapOnAttributionButton:self.currentImageIndex];
+  }
 }
 
 - (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation {
@@ -211,14 +225,9 @@
 }
 
 - (void)share:(id)sender {
-    if ([UIActivityViewController class]) {
-        id<FSImage> currentImage = _imageSource[[self currentImageIndex]];
-        NSAssert(currentImage.image, @"The image must be loaded to share.");
-        if (currentImage.image) {
-            UIActivityViewController *controller = [[UIActivityViewController alloc] initWithActivityItems:@[currentImage.image] applicationActivities:nil];
-            [self presentViewController:controller animated:YES completion:nil];
-        }
-    }
+  if ([self.delegate respondsToSelector:@selector(imageViewerViewController:shareImageAtIndex:)]) {
+    [self.delegate imageViewerViewController:self shareImageAtIndex:self.currentImageIndex];
+  }
 }
 
 - (void)setSharingDisabled:(BOOL)sharingDisabled {
