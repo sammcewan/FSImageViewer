@@ -38,6 +38,8 @@
 
 - (void)imageViewerViewController:(FSImageViewerViewController *)imageViewerViewController willDismissViewControllerAnimated:(BOOL)animated;
 - (void)imageViewerViewController:(FSImageViewerViewController *)imageViewerViewController didDismissViewControllerAnimated:(BOOL)animated;
+- (void)imageViewerViewController:(FSImageViewerViewController *)imageViewerViewController didTapOnAttributionButton:(NSInteger)index;
+- (void)imageViewerViewController:(FSImageViewerViewController *)imageViewerViewController shareImageAtIndex:(NSInteger)index;
 
 @end
 
