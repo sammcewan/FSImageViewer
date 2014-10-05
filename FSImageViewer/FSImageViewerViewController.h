@@ -38,6 +38,8 @@
 
 - (void)imageViewerViewController:(FSImageViewerViewController *)imageViewerViewController willDismissViewControllerAnimated:(BOOL)animated;
 - (void)imageViewerViewController:(FSImageViewerViewController *)imageViewerViewController didDismissViewControllerAnimated:(BOOL)animated;
+- (BOOL)hasAttributionButton:(NSInteger)index;
+- (void)didChooseToPlayVideo:(NSInteger)index;
 - (void)imageViewerViewController:(FSImageViewerViewController *)imageViewerViewController didTapOnAttributionButton:(NSInteger)index barbuttonItem:(UIBarButtonItem *)barButtonItem;
 - (void)imageViewerViewController:(FSImageViewerViewController *)imageViewerViewController shareImageAtIndex:(NSInteger)index barbuttonItem:(UIBarButtonItem *)barButtonItem;
 

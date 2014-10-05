@@ -33,6 +33,8 @@
 @property(assign, nonatomic) CGSize size;
 /// The UIImage representation - set directly if not from remote.
 @property(strong, nonatomic) UIImage *image;
+/// true if has movie playback.
+@property(nonatomic, readonly) BOOL hasMoviePlayback;
 /// true if the image download failed.
 @property(assign, nonatomic, getter=didFail) BOOL failed;
 

@@ -27,14 +27,22 @@
 #import "FSImageSource.h"
 #import "FSImageLoader.h"
 
-@class FSImageScrollView, FSImageTitleView;
+@class FSImageScrollView, FSImageTitleView, FSImageView;
+
+@protocol FSImageViewDelegate <NSObject>
+
+- (void)didPlayVideo:(FSImageView *)imageView;
+
+@end
 
 @interface FSImageView : UIView <UIScrollViewDelegate>
 
 @property(strong, nonatomic) id <FSImage> image;
 @property(strong, nonatomic, readonly) UIImageView *imageView;
 @property(strong, nonatomic, readonly) FSImageScrollView *scrollView;
+@property(assign, nonatomic) BOOL canPlayVideo;
 @property(assign, nonatomic) BOOL loading;
+@property(weak, nonatomic) id<FSImageViewDelegate> delegate;
 
 - (void)killScrollViewZoom;
 

@@ -25,7 +25,7 @@
 #import "FSImageViewerViewController.h"
 #import "FSImageTitleView.h"
 
-@interface FSImageViewerViewController ()
+@interface FSImageViewerViewController ()<FSImageViewDelegate>
 
 @end
 
@@ -131,7 +131,7 @@
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
 
-  attributionButton = [[UIBarButtonItem alloc] initWithTitle:@"Info" style:UIBarButtonItemStyleDone target:self action:@selector(displayAttribution:)];
+    attributionButton = [[UIBarButtonItem alloc] initWithTitle:@"Info" style:UIBarButtonItemStyleDone target:self action:@selector(displayAttribution:)];
     shareButton = [[UIBarButtonItem alloc] initWithBarButtonSystemItem:UIBarButtonSystemItemAction target:self action:@selector(share:)];
     shareButton.enabled = NO;
     if (self.presentingViewController && (self.modalPresentationStyle == UIModalPresentationFullScreen)) {
@@ -145,12 +145,6 @@
         if (_sharingDisabled) {
             shareButton = nil;
         }
-    }
-
-    if (shareButton) {
-        [self.navigationItem setRightBarButtonItems:@[attributionButton, shareButton]];
-    } else {
-        [self.navigationItem setRightBarButtonItem:attributionButton];
     }
 
     [self setupScrollViewContentSize];
@@ -345,6 +339,28 @@
 }
 
 - (void)moveToImageAtIndex:(NSInteger)index animated:(BOOL)animated {
+    if ([self.delegate respondsToSelector:@selector(hasAttributionButton:)]) {
+        if ([self.delegate hasAttributionButton:index]) {
+            if (shareButton) {
+                [self.navigationItem setRightBarButtonItems:@[attributionButton, shareButton]];
+            } else {
+                [self.navigationItem setRightBarButtonItem:attributionButton animated:YES];
+            }
+        } else {
+            if (shareButton) {
+                [self.navigationItem setRightBarButtonItem:shareButton animated:YES];
+            } else {
+                [self.navigationItem setRightBarButtonItem:nil animated:YES];
+            }
+        }
+    } else {
+        if (shareButton) {
+            [self.navigationItem setRightBarButtonItem:shareButton animated:YES];
+        } else {
+            [self.navigationItem setRightBarButtonItem:nil animated:YES];
+        }
+    }
+
     if (index < [self.imageSource numberOfImages] && index >= 0) {
         
         BOOL sameIndex = (currentPageIndex == index);
@@ -406,6 +422,7 @@
             }
 
             FSImageView *imageView = [_imageViews objectAtIndex:(NSUInteger) page];
+            imageView.delegate = self;
             CGRect newFrame = CGRectMake(originX, 0.0f, _scrollView.bounds.size.width, _scrollView.bounds.size.height);
 
             if (!CGRectEqualToRect(imageView.frame, newFrame)) {
@@ -562,6 +579,17 @@
         }
     defaultString = [bundle localizedStringForKey:key value:defaultString table:nil];
     return [[NSBundle mainBundle] localizedStringForKey:key value:defaultString table:nil];
+}
+
+#pragma mark - FSImageViewDelegate
+- (void)didPlayVideo:(FSImageView *)imageView {
+    if ([self.delegate respondsToSelector:@selector(didChooseToPlayVideo:)]) {
+        for (NSUInteger i = 0; i < self.imageSource.images.count; i++) {
+            if (self.imageSource.images[i] == imageView.image) {
+                [self.delegate didChooseToPlayVideo:i];
+            }
+        }
+    }
 }
 
 @end

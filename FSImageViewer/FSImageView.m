@@ -46,6 +46,7 @@
 @implementation FSImageView {
     UIActivityIndicatorView *activityView;
     CGFloat beginRadians;
+    UIButton *playVideoButton;
 }
 
 - (id)initWithFrame:(CGRect)frame {
@@ -69,6 +70,12 @@
         imageView.tag = ZOOM_VIEW_TAG;
         [_scrollView addSubview:imageView];
         _imageView = imageView;
+
+        playVideoButton = [UIButton buttonWithType:UIButtonTypeCustom];
+        [playVideoButton setImage:[UIImage imageNamed:@"FSImageViewer.bundle/FS-play"] forState:UIControlStateNormal];
+        [playVideoButton addTarget:self action:@selector(playVideo) forControlEvents:UIControlEventTouchUpInside];
+        [playVideoButton sizeToFit];
+        [self addSubview:playVideoButton];
 
         activityView = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleGray];
         activityView.frame = CGRectMake((CGRectGetWidth(self.frame) / 2) - 11.0f, CGRectGetHeight(self.frame) / 2, 22.0f, 22.0f);
@@ -111,6 +118,12 @@
     }
 
     _image = aImage;
+
+    if (aImage.hasMoviePlayback) {
+        playVideoButton.hidden = NO;
+    } else {
+        playVideoButton.hidden = YES;
+    }
 
     if (_image.image) {
         _imageView.image = _image.image;
@@ -213,6 +226,11 @@
     self.scrollView.backgroundColor = color;
 }
 
+- (void)playVideo {
+    if ([self.delegate respondsToSelector:@selector(didPlayVideo:)]) {
+      [self.delegate didPlayVideo:self];
+    }
+}
 
 - (void)handleFailedImage {
 
@@ -279,6 +297,7 @@
     self.scrollView.contentSize = CGSizeMake(self.scrollView.bounds.size.width, self.scrollView.bounds.size.height);
     self.scrollView.contentOffset = CGPointMake(0.0f, 0.0f);
     self.imageView.frame = self.scrollView.bounds;
+    playVideoButton.center = self.scrollView.center;
 
     if (animated) {
         [UIView commitAnimations];
