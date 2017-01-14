@@ -87,11 +87,6 @@
         [playVideoButton sizeToFit];
         [self addSubview:playVideoButton];
 
-        activityView = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleGray];
-        activityView.frame = CGRectMake((CGRectGetWidth(self.frame) / 2) - 11.0f, CGRectGetHeight(self.frame) / 2, 22.0f, 22.0f);
-        activityView.autoresizingMask = UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleBottomMargin | UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleTopMargin;
-        [self addSubview:activityView];
-
         RotateGesture *gesture = [[RotateGesture alloc] initWithTarget:self action:@selector(rotate:)];
         [self addGestureRecognizer:gesture];
 

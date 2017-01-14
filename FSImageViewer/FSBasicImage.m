@@ -31,6 +31,7 @@
 @synthesize size = _size;
 @synthesize image = _image;
 @synthesize failed = _failed;
+@synthesize hasMoviePlayback = _hasMoviePlayback;
 
 - (instancetype)initWithImageURL:(NSURL *)aURL name:(NSString *)aName image:(UIImage *)aImage {
     self = [super init];

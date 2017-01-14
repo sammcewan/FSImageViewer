@@ -8,8 +8,14 @@ target 'FSImageViewer' do
     pod 'EGOCache', '~> 2.1'
     pod 'UAProgressView', '~> 0.1'
     
-    target 'FSImageViewer' do
+    target 'FSImageViewerTests' do
         pod 'OCMock', '~> 3.1'
         pod 'FBSnapshotTestCase/Core', '~> 2.0'
     end
+end
+
+target 'FSImageViewerDemo' do
+    pod 'AFNetworking', '~> 2.5'
+    pod 'EGOCache', '~> 2.1'
+    pod 'UAProgressView', '~> 0.1'
 end
