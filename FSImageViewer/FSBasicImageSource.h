@@ -29,6 +29,6 @@
 @interface FSBasicImageSource : NSObject<FSImageSource>
 
 /// @param images array of FSImage objects
-- (id)initWithImages:(NSArray*)images;
+- (instancetype _Nonnull)initWithImages:(NSArray<id <FSImage>>* _Nonnull)images;
 
 @end

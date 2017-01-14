@@ -26,6 +26,8 @@
 #import "FSImageSource.h"
 #import "FSTitleView.h"
 
+NS_ASSUME_NONNULL_BEGIN
+
 @class FSImageViewerViewController;
 
 // Optional Delegate for getting current presented image index.
@@ -49,38 +51,50 @@
 @interface FSImageViewerViewController : UIViewController <UIScrollViewDelegate>
 
 /// @param imageSource image data source
-- (id)initWithImageSource:(id <FSImageSource>)imageSource;
+- (instancetype)initWithImageSource:(id <FSImageSource>)imageSource;
 
 /// @param imageSource image data source
 /// @param imageIndex the index of the first shown image
-- (id)initWithImageSource:(id <FSImageSource>)imageSource imageIndex:(NSInteger)imageIndex;
+- (instancetype)initWithImageSource:(id <FSImageSource>)imageSource imageIndex:(NSInteger)imageIndex;
 
 /// Image data source
 @property(strong, nonatomic, readonly) id <FSImageSource> imageSource;
 
 /// Title
-@property(strong, nonatomic) UIView<FSTitleView>* titleView;
+@property(strong, nonatomic, nullable) UIView<FSTitleView>* titleView;
 
 /// Optional Delegate
-@property(weak, nonatomic) id<FSImageViewerViewControllerDelegate> delegate;
+@property(weak, nonatomic, nullable) id<FSImageViewerViewControllerDelegate> delegate;
 
 /// FSImageView array
-@property(strong, nonatomic) NSMutableArray *imageViews;
+@property(strong, nonatomic, nullable) NSMutableArray *imageViews;
 
 /// Main scrollView
-@property(strong, nonatomic) UIScrollView *scrollView;
+@property(strong, nonatomic, nullable) UIScrollView *scrollView;
 
 /// Display a "x of y" images in the navigation title - Default is YES
 @property(assign, nonatomic) BOOL showNumberOfItemsInTitle;
 
-/// Disable image sharing
+/// Disable image sharing - Default is NO
 @property(assign, nonatomic, getter = isSharingDisabled) BOOL sharingDisabled;
 
+/// Override rotation of images - Default is YES
+@property(assign, nonatomic, getter = isRotationEnabled) BOOL rotationEnabled;
+
 /// Override the background color when overlay is hidden - Default is black
-@property(strong, nonatomic) UIColor *backgroundColorHidden;
+@property(strong, nonatomic, nullable) UIColor *backgroundColorHidden;
 
 /// Override the background color when overlay is visible - Default is white
-@property(strong, nonatomic) UIColor *backgroundColorVisible;
+@property(strong, nonatomic, nullable) UIColor *backgroundColorVisible;
+
+/// Override the progressView color when overlay is hidden - Default is white
+@property(strong, nonatomic, nullable) UIColor *progressColorHidden;
+
+/// Override the progressView color when overlay is visible - Default is darkGrayColor
+@property(strong, nonatomic, nullable) UIColor *progressColorVisible;
+
+/// Used to add additional items to the "share" button
+@property(strong, nonatomic, nullable) NSArray* applicationActivities;
 
 /// Current index of the image displayed
 /// @return current index of the image displayed
@@ -90,5 +104,7 @@
 /// @param index index move to
 /// @param animated should the movevement animated
 - (void)moveToImageAtIndex:(NSInteger)index animated:(BOOL)animated;
+
+NS_ASSUME_NONNULL_END
 
 @end

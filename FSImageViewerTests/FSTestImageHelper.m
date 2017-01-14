@@ -1,9 +1,9 @@
 //
-//  FSPlaceholderImagesTests.m
-//  FSImageViewerTests
+//  FSTestImageHelper.m
+//  FSImageViewer
 //
-//  Created by Felix Schulze on 01.06.14.
-//  Copyright (c) 2014 Felix Schulze. All rights reserved.
+//  Created by Felix Schulze on 19.09.15.
+//  Copyright © 2015 Felix Schulze. All rights reserved.
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy
 //  of this software and associated documentation files (the "Software"), to deal
@@ -24,27 +24,15 @@
 //  THE SOFTWARE.
 //
 
-#import <XCTest/XCTest.h>
-#import <FBSnapshotTestCase/FBSnapshotTestCase.h>
+#import "FSTestImageHelper.h"
 
-#import "FSPlaceholderImages.h"
+@implementation FSTestImageHelper
 
-
-@interface FSPlaceholderImagesTests : FBSnapshotTestCase
-@end
-
-@implementation FSPlaceholderImagesTests
-
-- (void)setUp {
-    [super setUp];
-
-    self.recordMode = NO;
-}
-
-
-- (void)testView {
-    UIImageView *imageView = [[UIImageView alloc] initWithImage:[FSPlaceholderImages errorImage]];
-    FBSnapshotVerifyView(imageView, nil);
++ (UIImage *)imageNamed:(NSString *)name {
+    NSString *extension = name.pathExtension ? name.pathExtension : @"png";
+    NSString *fileName = name.stringByDeletingPathExtension;
+    NSString *imagePath = [[NSBundle bundleForClass:[self class]] pathForResource:fileName ofType:extension];
+    return [UIImage imageWithContentsOfFile:imagePath];
 }
 
 @end

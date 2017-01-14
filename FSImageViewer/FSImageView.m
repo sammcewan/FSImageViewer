@@ -21,7 +21,7 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 //
-
+#import <UAProgressView/UAProgressView.h>
 #import "FSImageView.h"
 #import "FSPlaceholderImages.h"
 #import "FSImageScrollView.h"
@@ -43,19 +43,25 @@
 }
 @end
 
+@interface FSImageView()
+
+@property (nonatomic, strong) UAProgressView *progressView;
+
+@end
+
 @implementation FSImageView {
-    UIActivityIndicatorView *activityView;
     CGFloat beginRadians;
     UIButton *playVideoButton;
 }
 
-- (id)initWithFrame:(CGRect)frame {
+- (instancetype)initWithFrame:(CGRect)frame {
     if ((self = [super initWithFrame:frame])) {
 
         self.backgroundColor = [UIColor whiteColor];
         self.userInteractionEnabled = NO;
         self.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
         self.opaque = YES;
+        self.rotationEnabled = YES;
 
         FSImageScrollView *scrollView = [[FSImageScrollView alloc] initWithFrame:self.bounds];
         scrollView.backgroundColor = [UIColor whiteColor];
@@ -70,7 +76,11 @@
         imageView.tag = ZOOM_VIEW_TAG;
         [_scrollView addSubview:imageView];
         _imageView = imageView;
-
+        
+        self.progressView = [[UAProgressView alloc] initWithFrame:CGRectMake((CGRectGetWidth(self.frame) / 2) - 22.0f, CGRectGetHeight(self.frame) / 2 - 22.0f, 44.0f, 44.0f)];
+        _progressView.autoresizingMask = UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleBottomMargin | UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleTopMargin;
+        [self addSubview:_progressView];
+        
         playVideoButton = [UIButton buttonWithType:UIButtonTypeCustom];
         [playVideoButton setImage:[UIImage imageNamed:@"FSImageViewer.bundle/FS-play"] forState:UIControlStateNormal];
         [playVideoButton addTarget:self action:@selector(playVideo) forControlEvents:UIControlEventTouchUpInside];
@@ -138,7 +148,8 @@
             NSInteger fileSize = [[attributes objectForKey:NSFileSize] integerValue];
 
             if (fileSize >= MB_FILE_SIZE) {
-
+                _progressView.hidden = NO;
+                [_progressView setProgress:0.5 animated:YES];
                 dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), ^{
 
                     UIImage *image = nil;
@@ -150,7 +161,7 @@
                     }
 
                     dispatch_async(dispatch_get_main_queue(), ^{
-
+                        _progressView.hidden = YES;
                         if (image != nil) {
                             [self setupImageViewWithImage:image];
                         }
@@ -165,13 +176,18 @@
 
         }
         else {
-            [[FSImageLoader sharedInstance] loadImageForURL:_image.URL image:^(UIImage *image, NSError *error) {
+            _progressView.hidden = NO;
+            __weak FSImageView *weakSelf = self;
+            [[FSImageLoader sharedInstance] loadImageForURL:_image.URL progress:^(float progress) {
+                [weakSelf.progressView setProgress:progress animated:YES];
+            }image:^(UIImage *image, NSError *error) {
+                __strong FSImageView *strongSelf = weakSelf;
                 if (!error) {
-                    _image.image = image;
-                    [self setupImageViewWithImage:image];
+                    strongSelf.image.image = image;
+                    [strongSelf setupImageViewWithImage:image];
                 }
                 else {
-                    [self handleFailedImage];
+                    [strongSelf handleFailedImage];
                 }
             }];
         }
@@ -179,8 +195,7 @@
     }
 
     if (_imageView.image) {
-
-        [activityView stopAnimating];
+        _progressView.hidden = YES;
         self.userInteractionEnabled = YES;
         _loading = NO;
 
@@ -191,7 +206,6 @@
 
     } else {
         _loading = YES;
-        [activityView startAnimating];
         self.userInteractionEnabled = NO;
     }
     [self layoutScrollViewAnimated:NO];
@@ -203,7 +217,7 @@
     }
 
     _loading = NO;
-    [activityView stopAnimating];
+    _progressView.hidden = YES;
     _imageView.image = aImage;
     [self layoutScrollViewAnimated:NO];
 
@@ -232,13 +246,17 @@
     }
 }
 
+- (void)changeProgressViewColor:(UIColor *)color {
+    _progressView.tintColor = color;
+}
+
 - (void)handleFailedImage {
 
     _imageView.image = FSImageViewerErrorPlaceholderImage;
     _image.failed = YES;
     [self layoutScrollViewAnimated:NO];
     self.userInteractionEnabled = NO;
-    [activityView stopAnimating];
+    _progressView.hidden = YES;
     [[NSNotificationCenter defaultCenter] postNotificationName:kFSImageViewerDidFinishedLoadingNotificationKey object:@{
             @"image" : self.image,
             @"failed" : @(YES)
@@ -333,7 +351,7 @@
 
 - (void)killScrollViewZoom {
 
-    if (!self.scrollView.zoomScale > 1.0f) return;
+    if ((self.scrollView.zoomScale == false) > 1.0f) return;
 
     if (!self.imageView.image) {
         return;
@@ -371,10 +389,8 @@
 
     if (scrollView.zoomScale > 1.0f) {
 
-        CGFloat height, width;
-        height = MIN(CGRectGetHeight(self.imageView.frame) + self.imageView.frame.origin.x, CGRectGetHeight(self.bounds));
-        width = MIN(CGRectGetWidth(self.imageView.frame) + self.imageView.frame.origin.y, CGRectGetWidth(self.bounds));
-
+        CGFloat height;
+        CGFloat width;
 
         if (CGRectGetMaxX(self.imageView.frame) > self.bounds.size.width) {
             width = CGRectGetWidth(self.bounds);
@@ -424,6 +440,9 @@
 
 - (void)rotate:(UIRotationGestureRecognizer *)gesture {
 
+    if (!_rotationEnabled) {
+        return;
+    }
     if (gesture.state == UIGestureRecognizerStateBegan) {
         [self.layer removeAllAnimations];
         beginRadians = gesture.rotation;

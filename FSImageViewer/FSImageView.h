@@ -43,6 +43,7 @@
 @property(assign, nonatomic) BOOL canPlayVideo;
 @property(assign, nonatomic) BOOL loading;
 @property(weak, nonatomic) id<FSImageViewDelegate> delegate;
+@property(assign, nonatomic) BOOL rotationEnabled;
 
 - (void)killScrollViewZoom;
 
@@ -51,6 +52,8 @@
 - (void)prepareForReuse;
 
 - (void)changeBackgroundColor:(UIColor *)color;
+
+- (void)changeProgressViewColor:(UIColor *)color;
 
 - (void)rotateToOrientation:(UIInterfaceOrientation)orientation;
 

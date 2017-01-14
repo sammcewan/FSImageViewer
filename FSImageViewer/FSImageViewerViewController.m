@@ -39,21 +39,23 @@
     UIBarButtonItem *attributionButton;
 }
 
-- (id)initWithImageSource:(id <FSImageSource>)aImageSource {
+- (instancetype)initWithImageSource:(id <FSImageSource>)aImageSource {
     return [self initWithImageSource:aImageSource imageIndex:0];
 }
 
-- (id)initWithImageSource:(id <FSImageSource>)aImageSource imageIndex:(NSInteger)imageIndex {
+- (instancetype)initWithImageSource:(id <FSImageSource>)aImageSource imageIndex:(NSInteger)imageIndex {
     if ((self = [super init])) {
 
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(toggleBarsNotification:) name:kFSImageViewerToogleBarsNotificationKey object:nil];
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(imageViewDidFinishLoading:) name:kFSImageViewerDidFinishedLoadingNotificationKey object:nil];
 
         self.hidesBottomBarWhenPushed = YES;
-        self.wantsFullScreenLayout = YES;
-        
+                
         self.backgroundColorHidden = [UIColor blackColor];
         self.backgroundColorVisible = [UIColor whiteColor];
+        
+        self.progressColorHidden = [UIColor whiteColor];
+        self.progressColorVisible = [UIColor darkGrayColor];
 
         _imageSource = aImageSource;
         pageIndex = imageIndex;
@@ -61,6 +63,7 @@
         
         self.sharingDisabled = NO;
         self.showNumberOfItemsInTitle = YES;
+        self.rotationEnabled = YES;
     }
     return self;
 }
@@ -71,13 +74,6 @@
     [[NSNotificationCenter defaultCenter] removeObserver:self];
 }
 
-- (void)didReceiveMemoryWarning {
-    self.imageViews = nil;
-    _scrollView.delegate = nil;
-    self.scrollView = nil;
-    self.titleView = nil;
-}
-
 - (void)viewDidLoad {
     [super viewDidLoad];
 
@@ -85,7 +81,7 @@
 		self.automaticallyAdjustsScrollViewInsets = NO;
 	}
 
-    self.view.backgroundColor = self.backgroundColorHidden;
+    self.view.backgroundColor = self.backgroundColorVisible;
 
     if (!_scrollView) {
         self.scrollView = [[UIScrollView alloc] initWithFrame:self.view.bounds];
@@ -118,7 +114,7 @@
     self.imageViews = views;
 }
 
-- (void) setTitleView:(UIView<FSTitleView> *)titleView {
+- (void)setTitleView:(UIView<FSTitleView> *)titleView {
     if(_titleView) {
         [_titleView removeFromSuperview];
     }
@@ -221,6 +217,17 @@
 - (void)share:(id)sender {
   if ([self.delegate respondsToSelector:@selector(imageViewerViewController:shareImageAtIndex:barbuttonItem:)]) {
     [self.delegate imageViewerViewController:self shareImageAtIndex:self.currentImageIndex barbuttonItem:sender];
+      id<FSImage> currentImage = _imageSource[[self currentImageIndex]];
+      NSAssert(currentImage.image, @"The image must be loaded to share.");
+      if (currentImage.image) {
+          UIActivityViewController *controller = [[UIActivityViewController alloc] initWithActivityItems:@[currentImage.image] applicationActivities:_applicationActivities];
+          if([controller respondsToSelector:@selector(popoverPresentationController)]) {
+              if (!controller.popoverPresentationController.barButtonItem) {
+                  controller.popoverPresentationController.barButtonItem = shareButton;
+              }
+          }
+          [self presentViewController:controller animated:YES completion:nil];
+      }
   }
 }
 
@@ -265,6 +272,7 @@
         for (FSImageView *imageView in _imageViews) {
             if ([imageView isKindOfClass:[FSImageView class]]) {
                 [imageView changeBackgroundColor:backgroundColor];;
+                [imageView changeProgressViewColor:hidden ? _progressColorHidden : _progressColorVisible];
             }
         }
     }];
@@ -499,8 +507,10 @@
 
     if (imageView == nil || (NSNull *) imageView == [NSNull null]) {
         imageView = [[FSImageView alloc] initWithFrame:CGRectMake(0.0f, 0.0f, _scrollView.bounds.size.width, _scrollView.bounds.size.height)];
+        imageView.rotationEnabled = _rotationEnabled;
         UIColor *backgroundColor = barsHidden ? _backgroundColorHidden : _backgroundColorVisible;
         [imageView changeBackgroundColor:backgroundColor];
+        [imageView changeProgressViewColor:barsHidden ? _progressColorHidden : _progressColorVisible];
         [_imageViews replaceObjectAtIndex:(NSUInteger) page withObject:imageView];
     }
 
@@ -565,8 +575,8 @@
     static NSBundle *bundle = nil;
     if (bundle == nil)
     {
-        NSString *bundlePath = [[NSBundle mainBundle] pathForResource:@"FSImageViewer" ofType:@"bundle"];
-        bundle = [NSBundle bundleWithPath:bundlePath] ?: [NSBundle mainBundle];
+        NSString *bundlePath = [[NSBundle bundleForClass:[self class]] pathForResource:@"FSImageViewer" ofType:@"bundle"];
+        bundle = [NSBundle bundleWithPath:bundlePath] ?: [NSBundle bundleForClass:[self class]];
         for (NSString *language in [NSLocale preferredLanguages])
             {
                 if ([[bundle localizations] containsObject:language])
@@ -578,7 +588,7 @@
             }
         }
     defaultString = [bundle localizedStringForKey:key value:defaultString table:nil];
-    return [[NSBundle mainBundle] localizedStringForKey:key value:defaultString table:nil];
+    return [[NSBundle bundleForClass:[self class]] localizedStringForKey:key value:defaultString table:nil];
 }
 
 #pragma mark - FSImageViewDelegate

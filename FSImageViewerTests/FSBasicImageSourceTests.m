@@ -1,9 +1,9 @@
 //
-//  FSPlaceholderImagesTests.m
-//  FSImageViewerTests
+//  FSBasicImageSourceTests.m
+//  FSImageViewer
 //
-//  Created by Felix Schulze on 01.06.14.
-//  Copyright (c) 2014 Felix Schulze. All rights reserved.
+//  Created by Felix Schulze on 19.09.15.
+//  Copyright © 2015 Felix Schulze. All rights reserved.
 //
 //  Permission is hereby granted, free of charge, to any person obtaining a copy
 //  of this software and associated documentation files (the "Software"), to deal
@@ -24,27 +24,32 @@
 //  THE SOFTWARE.
 //
 
-#import <XCTest/XCTest.h>
-#import <FBSnapshotTestCase/FBSnapshotTestCase.h>
+#import "FSBasicImageSource.h"
+#import "FSImage.h"
+#import "FSBasicImage.h"
 
-#import "FSPlaceholderImages.h"
+@interface FSBasicImageSourceTests : XCTestCase
 
-
-@interface FSPlaceholderImagesTests : FBSnapshotTestCase
 @end
 
-@implementation FSPlaceholderImagesTests
+@implementation FSBasicImageSourceTests
 
-- (void)setUp {
-    [super setUp];
-
-    self.recordMode = NO;
+- (void)testObjectSubscription {
+    id imageMock = OCMProtocolMock(@protocol(FSImage));
+    NSArray<id <FSImage>> *basicImageSource = @[imageMock];
+    FSBasicImageSource *imageSource = [[FSBasicImageSource alloc] initWithImages:basicImageSource];
+    
+    XCTAssertEqual(imageSource.numberOfImages, 1);
+    XCTAssertEqual(imageSource[0], imageMock);
 }
 
-
-- (void)testView {
-    UIImageView *imageView = [[UIImageView alloc] initWithImage:[FSPlaceholderImages errorImage]];
-    FBSnapshotVerifyView(imageView, nil);
+- (void)testObjectSubscriptionWithBasicImage {
+    FSBasicImage *basicImage = [[FSBasicImage alloc] initWithImageURL:[NSURL URLWithString:@"http://example.com"]];
+    NSArray<id <FSImage>> *basicImageSource = @[basicImage];
+    FSBasicImageSource *imageSource = [[FSBasicImageSource alloc] initWithImages:basicImageSource];
+    
+    XCTAssertEqual(imageSource.numberOfImages, 1);
+    XCTAssertEqual(imageSource[0], basicImage);
 }
 
 @end
