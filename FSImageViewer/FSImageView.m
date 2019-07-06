@@ -81,8 +81,15 @@
         _progressView.autoresizingMask = UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleBottomMargin | UIViewAutoresizingFlexibleLeftMargin | UIViewAutoresizingFlexibleTopMargin;
         [self addSubview:_progressView];
         
+        NSString *bundlePath = [[NSBundle bundleForClass:[self class]] pathForResource:@"FSImageViewer" ofType:@"bundle"];
+        NSBundle *bundle = [NSBundle bundleWithPath:bundlePath] ?: [NSBundle bundleForClass:[self class]];
+        UIImage *image = [UIImage imageNamed:@"FS-play"
+                                    inBundle:bundle
+               compatibleWithTraitCollection:nil];
+
+        
         playVideoButton = [UIButton buttonWithType:UIButtonTypeCustom];
-        [playVideoButton setImage:[UIImage imageNamed:@"FSImageViewer.bundle/FS-play"] forState:UIControlStateNormal];
+        [playVideoButton setImage:image forState:UIControlStateNormal];
         [playVideoButton addTarget:self action:@selector(playVideo) forControlEvents:UIControlEventTouchUpInside];
         [playVideoButton sizeToFit];
         [self addSubview:playVideoButton];
